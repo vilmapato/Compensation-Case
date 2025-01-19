@@ -1,0 +1,87 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+env/
+venv/
+ENV/
+*.env
+*.venv
+.Python
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+*.cover
+coverage.xml
+*.log
+*.out
+*.err
+.cache
+
+# Pytest
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Dash compiled files
+assets/__pycache__/
+assets/*.map
+
+# Node modules (if using npm in your project)
+node_modules/
+
+# Local database files
+*.db
+*.sqlite
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.swp
+*.temp
+*.tmp
+*.bak
+*.old
+*.orig
+*.rej
+~$
+
+# Environment files
+*.env
+.env.local
+.env.production
+.env.testing
+
+# Ignore CSV or Excel outputs
+*.csv
+*.xls
+*.xlsx
+
