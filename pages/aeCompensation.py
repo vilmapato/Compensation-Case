@@ -128,10 +128,10 @@ def create_layout(app):
         [
             html.Div(
                 [
-                    html.H1("AE Compensation Overview", className="page-title"),
+                    html.H1("", className="page-title"),
                     html.P(
-                        "This page provides an analysis of AE compensation, "
-                        "including total earnings, base salary, and variable components.",
+                        "SOLA-3 stands out with a consistent sales strategy, closing deals in 8 out of 12 months, which indicates a steady and effective sales plan. Additionally, SOLA-3 demonstrates a diverse channel mix, with customer referrals as the primary lead source, supported by IVAs and sales investors, aligning well with overall lead source trends. ",
+                        
                         className="page-description",
                     ),
                 ],

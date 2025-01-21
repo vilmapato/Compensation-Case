@@ -132,7 +132,12 @@ body {
     
   }
   
-  
+  .logo{
+    width: 100px;
+    height: 100px;
+    margin: 0;
+    padding: 0;
+  }
   
   @page {
     size: 200px 300mm;
@@ -281,12 +286,12 @@ body {
   }
   .all-tabs {
     text-align: center;
-    font-size: 1.3vw;
+    font-size: 1.1vw;
     margin: 20px;
   }
 
   a.active {
-    border-bottom: 2px solid blue;
+    border-bottom: 2px solid #152298;
     color: #302f2f;
   }
   .main-title {
@@ -305,8 +310,9 @@ body {
     font-family: "Clear Sans", Arial, sans-serif;
   }
   .page-description {
-    font-size: 1.5vw;
+    font-size: 1.2vw;
     color: #f0f0f0;
+    font-weight: 80;
   }
   .subtitle {
     position: relative;
