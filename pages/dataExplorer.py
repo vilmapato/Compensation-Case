@@ -17,13 +17,12 @@ def create_layout(app):
             ),
             html.Div(
                 [
-                    dcc.Input(id="input-1-state", type="text", value="Montréal"),
-                    dcc.Input(id="input-2-state", type="text", value="Canada"),
                     html.Button(
-                        id="submit-button-state", n_clicks=0, children="Submit"
+                        id="submit-button-state", n_clicks=0, children="Download Data"
                     ),
-                    html.Div(id="output-state"),
+                    dcc.Download(id="download-dataframe"),
                 ],
+                id="button-container",
             ),
             # Table for Deal Data
             html.H2("Deal Data"),
@@ -47,14 +46,17 @@ def create_layout(app):
     )
 
 
-@callback(
-    Output("output-state", "children"),
-    Input("submit-button-state", "n_clicks"),
-    State("input-1-state", "value"),
-    State("input-2-state", "value"),
-)
-def update_output(n_clicks, deal_data, ae_data):
+def register_callbacks_data_explorer(app):
 
-    return f"""
-        The Button has been pressed {n_clicks} times,
-        """
+    @app.callback(
+        Output("download-dataframe", "data"),
+        Input("submit-button-state", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def update_output_button(n_clicks):
+
+        # Access deal_data and ae_data from app.server
+        deal_data = app.server.deal_data
+        ae_data = app.server.ae_data
+
+        return dcc.send_data_frame(deal_data.to_csv, "deal_data.csv")

@@ -16,6 +16,7 @@ from components.header import Header
 from components.navigationBar import NavigationBar
 from compensation_model.calculations import calculate_compensation
 from pages.aeCompensation import register_callbacks
+from pages.dataExplorer import register_callbacks_data_explorer
 
 # Defining custom colors
 custom_colors = [
@@ -48,6 +49,7 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
 )
 register_callbacks(app)
+register_callbacks_data_explorer(app)
 app.title = "Compensation Dashboard"
 server = app.server
 
