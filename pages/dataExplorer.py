@@ -1,4 +1,6 @@
-from dash import html, dash_table, dcc, Input, Output, callback
+from dash import html, dash_table, dcc, Input, Output, callback, State
+import plotly.express as px
+import pandas as pd
 
 
 def create_layout(app):
@@ -7,7 +9,7 @@ def create_layout(app):
             html.Div(
                 [
                     html.P(
-                        "This page displays the datasets used in the model and allows you to download the data. is is a test3",
+                        "This page displays the datasets used in the model and allows you to download the data.",
                         className="page-description",
                     ),
                 ],
@@ -15,9 +17,12 @@ def create_layout(app):
             ),
             html.Div(
                 [
-                    dcc.Input(id="input-1", type="text", value="pato"),
-                    dcc.Input(id="input-2", type="text", value="Canada"),
-                    html.Div(id="number-output"),
+                    dcc.Input(id="input-1-state", type="text", value="Montréal"),
+                    dcc.Input(id="input-2-state", type="text", value="Canada"),
+                    html.Button(
+                        id="submit-button-state", n_clicks=0, children="Submit"
+                    ),
+                    html.Div(id="output-state"),
                 ],
             ),
             # Table for Deal Data
@@ -43,9 +48,13 @@ def create_layout(app):
 
 
 @callback(
-    Output("number-output", "children"),
-    Input("input-1", "value"),
-    Input("input-2", "value"),
+    Output("output-state", "children"),
+    Input("submit-button-state", "n_clicks"),
+    State("input-1-state", "value"),
+    State("input-2-state", "value"),
 )
-def update_output(input1, input2):
-    return f'Input 1 is "{input1}" and Input 2 is "{input2}"'
+def update_output(n_clicks, deal_data, ae_data):
+
+    return f"""
+        The Button has been pressed {n_clicks} times,
+        """
