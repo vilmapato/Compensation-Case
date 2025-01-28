@@ -22,7 +22,7 @@ def create_layout(app):
                     ),
                     dcc.Download(id="download-dataframe"),
                 ],
-                id="button-container",
+                className="download-container-de",
             ),
             # Table for Deal Data
             html.H2("Deal Data"),

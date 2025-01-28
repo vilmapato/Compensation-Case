@@ -191,11 +191,12 @@ def create_layout(app):
                     html.Div(
                         [
                             html.Button(
-                                "Download Data",
+                                # children="Download Data",
                                 id="download-ae-data-btn",
                                 className="download-ae-data-btn",
+                                n_clicks=0,
                             ),
-                            dcc.Download(id="download-ae-data"),
+                            dcc.Download(id="download-ae-Data"),
                         ],
                         className="download-container",
                     ),
@@ -226,15 +227,16 @@ def register_callbacks(app):
             Output("summary-container", "children"),  # Update the summary
             # Output("total-compensation-bar-chart", "figure"),  # Bar chart
             Output("stacked-compensation-bar-chart", "figure"),  # Stacked bar chart
-            # Output("download-container", "data"),  # Data for downloading
+            # Output("download-ae-Data", "value"),  # Data for downloading
         ],
         [
             Input("year-input", "value"),
             Input("month-input", "value"),
-        ],  # , Input("download-ae-data-btn", "n_clicks")],
+            # Input("download-ae-data-btn", "n_clicks"),
+        ],
         prevent_initial_call=True,
     )
-    def update_content(selected_year, selected_month):
+    def update_content(selected_year, selected_month):  # , n_clicks):
         # print(f"Selected Year: {selected_year}, Selected Month: {selected_month}")
         if not selected_year:
             return "Please select a year.", {
@@ -342,6 +344,7 @@ def register_callbacks(app):
         )
 
         # Prepare data for download
+
         """ downloadable_data = None
         if n_clicks:
             # Combine global_summary and summary_by_ae into one downloadable dataset
