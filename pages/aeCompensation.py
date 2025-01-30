@@ -101,40 +101,6 @@ def create_summary(deal_data, ae_data, year, month=None):
 
 
 def create_layout(app):
-    # Access deal_data from app.server
-    # deal_data = app.server.deal_data
-    # ae_data = app.server.ae_data
-
-    # Generate the summary and grouped data
-    # summary, summary_by_ae = create_summary(deal_data, ae_data, year=2024, month=0)
-    # print("Global Summary:", summary)
-    # print("Summary by AE:")
-    # print(summary)
-
-    # Bar Chart: Total Compensation by AE
-    # bar_chart = px.bar(
-    #     ae_grouped,
-    #     x="AE",
-    #     y="Total_Comp",
-    #     title="Total Compensation by AE",
-    #     labels={"Total_Comp": "Compensation ($)", "AE": "Account Executive"},
-    #     color="AE",
-    # )
-
-    # # Pie Chart: Breakdown of Variable Compensation
-    # pie_data = ae_grouped[['AE', 'Upsell_Comp', 'New_Logo_Comp', 'Services_Comp', 'Accelerator_Bonus']].copy()
-    # pie_data = pie_data.melt(
-    #     id_vars="AE",
-    #     value_vars=["Upsell_Comp", "New_Logo_Comp", "Services_Comp", "Accelerator_Bonus"],
-    #     var_name="Variable Component",
-    #     value_name="Amount",
-    # )
-    # pie_chart = px.pie(
-    #     pie_data,
-    #     names="Variable Component",
-    #     values="Amount",
-    #     title="Breakdown of Variable Compensation",
-    # )
 
     return html.Div(
         [

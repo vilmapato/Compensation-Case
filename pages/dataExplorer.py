@@ -31,7 +31,20 @@ def create_layout(app):
                 columns=[{"name": i, "id": i} for i in app.server.deal_data.columns],
                 data=app.server.deal_data.to_dict("records"),
                 page_size=10,
-                style_table={"overflowX": "auto"},
+                style_table={
+                    "width": "90%",  # Ensures table stretches to full width
+                    "overflowX": "auto",  # Enables horizontal scrolling if needed
+                },
+                style_cell={
+                    "minWidth": "100px",
+                    "maxWidth": "300px",
+                    "whiteSpace": "normal",  # Ensures cells resize properly
+                    "textAlign": "left",  # Align text for better readability
+                },
+                style_header={
+                    "fontWeight": "bold",  # Makes headers more readable
+                    "textAlign": "left",
+                },
             ),
             # Table for AE Data
             html.H2("AE Data"),
