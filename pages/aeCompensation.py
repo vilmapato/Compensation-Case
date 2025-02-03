@@ -64,10 +64,72 @@ def create_summary(deal_data, ae_data, year, month=None):
     # Summary by AE
     summary_by_ae = ae_data[["AE", "Accelerator_Bonus", "Base_Salary_Annual"]].copy()
 
-    # Adjust accelerator bonus and base salary for monthly view
+    # Adjust base salary for monthly view
     if month:
-        summary_by_ae["Accelerator_Bonus"] /= 12
         summary_by_ae["Base_Salary_Annual"] /= 12
+
+    # Calculate accelerator dynamicallly depending on month selected
+    # Filter deals for the given year and AE
+    deal_data = deal_data[deal_data["Close_Date"].dt.year == year]
+    ae_accelerators = []
+
+    # Iterate through each AE
+    for ae in ae_data["AE"].unique():
+        # Filter deals for this AE
+        ae_deals = deal_data[deal_data["AE"] == ae]
+        cumulative_attainment = 0
+        cumulative_new_logos = 0
+        accelerator_bonus_by_month = {}
+
+        # Iterate month by month up to the selected month
+        for current_month in range(1, month + 1):
+            # Filter deals up to the current month
+            monthly_deals = ae_deals[ae_deals["Close_Date"].dt.month <= current_month]
+            current_month_deals = ae_deals[
+                ae_deals["Close_Date"].dt.month == current_month
+            ]
+
+            # Calculate cumulative attainment and new logo count
+            cumulative_attainment = (
+                monthly_deals["ACV"].sum()
+                / ae_data.loc[ae_data["AE"] == ae, "Quota"].values[0]
+            )
+            cumulative_new_logos = monthly_deals[monthly_deals["Type"] == "New"].shape[
+                0
+            ]
+
+            # Check if the accelerator is unlocked
+            if cumulative_attainment > 2.0 and cumulative_new_logos >= 5:
+                bonus = (
+                    current_month_deals["New_Logo_Comp"].sum() * 2.0
+                )  # 200% accelerator
+            elif cumulative_attainment > 1.5 and cumulative_new_logos >= 4:
+                bonus = (
+                    current_month_deals["New_Logo_Comp"].sum() * 1.0
+                )  # 100% accelerator
+            elif cumulative_attainment > 1.25 and cumulative_new_logos >= 4:
+                bonus = (
+                    current_month_deals["New_Logo_Comp"].sum() * 0.5
+                )  # 50% accelerator
+            elif cumulative_attainment > 1.0 and cumulative_new_logos >= 3:
+                bonus = (
+                    current_month_deals["New_Logo_Comp"].sum() * 0.3
+                )  # 30% accelerator
+            else:
+                bonus = 0
+
+            # Pay the bonus in the following month
+            payment_month = current_month + 1
+            if payment_month <= 12:  # Ensure we don't exceed the year
+                if payment_month not in accelerator_bonus_by_month:
+                    accelerator_bonus_by_month[payment_month] = 0
+                accelerator_bonus_by_month[payment_month] += bonus
+
+        # Store the AE's accelerator bonuses
+        for month, bonus in accelerator_bonus_by_month.items():
+            ae_accelerators.append(
+                {"AE": ae, "Month": month, "Accelerator_Bonus": bonus}
+            )
 
     # Group filtered_deals by AE for variable compensation components
     variable_comp_by_ae = (
@@ -247,15 +309,6 @@ def register_callbacks(app):
             className="summary-metrics",
         )
 
-        # Create the bar chart for total compensation by AE
-        # figure = px.bar(
-        #     summary_by_ae,
-        #     x="AE",
-        #     y="total_compensation",
-        #     title=f"Total Compensation by AE ({selected_year}, {selected_month or 'All Months'})",
-        #     labels={"total_compensation": "Compensation ($)", "AE": "Account Executive"},
-        #     color="AE",
-        # )
         color_mapping = {
             "total_upsell_comp": "rgba(13, 32, 190, 1)",  # Blue
             "total_new_logo_comp": "rgba(56, 96, 229, 1)",  # Light Blue
