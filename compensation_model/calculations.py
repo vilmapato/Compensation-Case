@@ -182,9 +182,9 @@ def calculate_compensation(deal_data, ae_data, exceptions):
             return row["New_Logo_Comp"] * 0.3  # 30% accelerator
         return 0
 
-    ae_data["Accelerator_Bonus"] = ae_data.apply(calculate_accelerators, axis=1)
+    ae_data["Accelerator_Bonus_Annual"] = ae_data.apply(calculate_accelerators, axis=1)
 
     # Update Total Compensation with Accelerator
-    ae_data["Total_Comp"] += ae_data["Accelerator_Bonus"]
+    ae_data["Total_Comp"] += ae_data["Accelerator_Bonus_Annual"]
 
     return deal_data, ae_data

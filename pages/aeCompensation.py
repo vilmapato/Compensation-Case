@@ -3,6 +3,7 @@ from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
 from components.card import Card
+from compensation_model.acceleratorCalculation import calculate_monthly_accelerators
 
 
 def create_summary(deal_data, ae_data, year, month=None):
@@ -46,13 +47,13 @@ def create_summary(deal_data, ae_data, year, month=None):
         "total_upsell_comp": filtered_deals["Upsell_Comp"].sum(),
         "total_new_logo_comp": filtered_deals["New_Logo_Comp"].sum(),
         "total_services_comp": filtered_services["Services_Comp"].sum(),
-        "total_accelerator_bonus": ae_data["Accelerator_Bonus"].sum(),
+        "total_accelerator_bonus_annual": ae_data["Accelerator_Bonus_Annual"].sum(),
         "total_acv": filtered_deals["ACV"].sum(),
         "total_compensation": (
             filtered_deals["Upsell_Comp"].sum()
             + filtered_deals["New_Logo_Comp"].sum()
             + filtered_services["Services_Comp"].sum()
-            + ae_data["Accelerator_Bonus"].sum()
+            + ae_data["Accelerator_Bonus_Annual"].sum()
             + (
                 ae_data["Base_Salary_Annual"].sum() / 12
                 if month
@@ -62,74 +63,27 @@ def create_summary(deal_data, ae_data, year, month=None):
     }
 
     # Summary by AE
-    summary_by_ae = ae_data[["AE", "Accelerator_Bonus", "Base_Salary_Annual"]].copy()
+    summary_by_ae = ae_data[
+        ["AE", "Accelerator_Bonus_Annual", "Base_Salary_Annual"]
+    ].copy()
 
     # Adjust base salary for monthly view
     if month:
         summary_by_ae["Base_Salary_Annual"] /= 12
-
-    # Calculate accelerator dynamicallly depending on month selected
-    # Filter deals for the given year and AE
-    deal_data = deal_data[deal_data["Close_Date"].dt.year == year]
-    ae_accelerators = []
-
-    # Iterate through each AE
-    for ae in ae_data["AE"].unique():
-        # Filter deals for this AE
-        ae_deals = deal_data[deal_data["AE"] == ae]
-        cumulative_attainment = 0
-        cumulative_new_logos = 0
-        accelerator_bonus_by_month = {}
-
-        # Iterate month by month up to the selected month
-        for current_month in range(1, month + 1):
-            # Filter deals up to the current month
-            monthly_deals = ae_deals[ae_deals["Close_Date"].dt.month <= current_month]
-            current_month_deals = ae_deals[
-                ae_deals["Close_Date"].dt.month == current_month
-            ]
-
-            # Calculate cumulative attainment and new logo count
-            cumulative_attainment = (
-                monthly_deals["ACV"].sum()
-                / ae_data.loc[ae_data["AE"] == ae, "Quota"].values[0]
-            )
-            cumulative_new_logos = monthly_deals[monthly_deals["Type"] == "New"].shape[
-                0
-            ]
-
-            # Check if the accelerator is unlocked
-            if cumulative_attainment > 2.0 and cumulative_new_logos >= 5:
-                bonus = (
-                    current_month_deals["New_Logo_Comp"].sum() * 2.0
-                )  # 200% accelerator
-            elif cumulative_attainment > 1.5 and cumulative_new_logos >= 4:
-                bonus = (
-                    current_month_deals["New_Logo_Comp"].sum() * 1.0
-                )  # 100% accelerator
-            elif cumulative_attainment > 1.25 and cumulative_new_logos >= 4:
-                bonus = (
-                    current_month_deals["New_Logo_Comp"].sum() * 0.5
-                )  # 50% accelerator
-            elif cumulative_attainment > 1.0 and cumulative_new_logos >= 3:
-                bonus = (
-                    current_month_deals["New_Logo_Comp"].sum() * 0.3
-                )  # 30% accelerator
-            else:
-                bonus = 0
-
-            # Pay the bonus in the following month
-            payment_month = current_month + 1
-            if payment_month <= 12:  # Ensure we don't exceed the year
-                if payment_month not in accelerator_bonus_by_month:
-                    accelerator_bonus_by_month[payment_month] = 0
-                accelerator_bonus_by_month[payment_month] += bonus
-
-        # Store the AE's accelerator bonuses
-        for month, bonus in accelerator_bonus_by_month.items():
-            ae_accelerators.append(
-                {"AE": ae, "Month": month, "Accelerator_Bonus": bonus}
-            )
+        # Calculate accelerator dynamicallly depending on month selected
+        accelerator_df = calculate_monthly_accelerators(deal_data, ae_data, year, month)
+        print("accelerator_df:", accelerator_df[accelerator_df["AE"] == "APAC-1"])
+        # Merge accelerator bonuses into the AE summary
+        # summary_by_ae = pd.merge(
+        #     summary_by_ae,
+        #     accelerator_df[accelerator_df["Month"] == month][
+        #         ["AE", "Accelerator_Bonus_Monthly"]
+        #     ],
+        #     on="AE",
+        #     how="left",
+        # ).fillna(
+        #     0
+        # )  # Fill missing values with 0 for AEs without bonuses
 
     # Group filtered_deals by AE for variable compensation components
     variable_comp_by_ae = (
@@ -155,7 +109,7 @@ def create_summary(deal_data, ae_data, year, month=None):
         summary_by_ae["total_upsell_comp"]
         + summary_by_ae["total_new_logo_comp"]
         + summary_by_ae["total_services_comp"]
-        + summary_by_ae["Accelerator_Bonus"]
+        + summary_by_ae["Accelerator_Bonus_Annual"]
         + summary_by_ae["Base_Salary_Annual"]
     )
 
@@ -279,10 +233,11 @@ def register_callbacks(app):
         global_summary, summary_by_ae = create_summary(
             deal_data, ae_data, year=selected_year, month=selected_month
         )
-        # print("Global Summary:", summary)
-        # print(summary_by_ae)
+
+        # print("summary by AE:", summary_by_ae)
         # print(global_summary)
-        # Prepare the summary as a list of HTML Divs
+
+        # Prepare the summary as a list of HTML Divs. HERE the info must be displayed dynamically!! if year selected use global summary, if month selected use summary by AE
         summary_content = html.Div(
             [
                 Card(
@@ -299,7 +254,7 @@ def register_callbacks(app):
                 ),
                 Card(
                     "Total Accelerator Bonus",
-                    f"${global_summary['total_accelerator_bonus']:,.2f}",
+                    f"${global_summary['total_accelerator_bonus_annual']:,.2f}",
                 ),
                 Card(
                     "Total Compensation",
@@ -313,10 +268,10 @@ def register_callbacks(app):
             "total_upsell_comp": "rgba(13, 32, 190, 1)",  # Blue
             "total_new_logo_comp": "rgba(56, 96, 229, 1)",  # Light Blue
             "total_services_comp": "rgba(83, 123, 225, 1)",  # Medium Blue
-            "Accelerator_Bonus": "rgba(179, 63, 246, 1)",  # purple
+            # "Accelerator_Bonus": "rgba(179, 63, 246, 1)",  # purple
             "Base_Salary_Annual": "rgba(160, 192, 250, 1)",  # light blue
         }
-        # Stacked Bar Chart: Breakdown of Total Compensation by Component
+        # Stacked Bar Chart: Breakdown of Total Compensation by Component if year selected use global summary, if month selected use summary by AE
         stacked_bar_chart = px.bar(
             summary_by_ae.melt(
                 id_vars="AE",
@@ -324,7 +279,7 @@ def register_callbacks(app):
                     "total_upsell_comp",
                     "total_new_logo_comp",
                     "total_services_comp",
-                    "Accelerator_Bonus",
+                    # "Accelerator_Bonus",
                     "Base_Salary_Annual",
                 ],
                 var_name="Compensation Component",
